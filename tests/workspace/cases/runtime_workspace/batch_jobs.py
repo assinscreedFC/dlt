@@ -90,6 +90,31 @@ def incremental_interval_job(run_context: TJobRunContext):
     return f"iv={inc.initial_value},end={inc.end_value},items={len(items)},allow_ext={ctx_flag}"
 
 
+@job(
+    allow_external_schedulers=True,
+    interval={"start": "2020-01-01T00:00:00Z"},
+    trigger="0 0 * * *",
+)
+def epoch_override_job(run_context: TJobRunContext):
+    """Override interval start via `dlt.current.interval.update` before incremental bind."""
+    from datetime import datetime  # noqa: I251
+    from dlt.common.pendulum import pendulum
+    from dlt.common.time import ensure_pendulum_datetime_utc
+
+    dlt.current.interval.update(start=ensure_pendulum_datetime_utc("2023-06-01T00:00:00Z"))
+
+    @dlt.resource()
+    def my_events(
+        updated_at: dlt.sources.incremental[datetime] = dlt.sources.incremental("updated_at"),
+    ):
+        yield {"updated_at": pendulum.datetime(2024, 1, 15, 12, tz="UTC")}
+
+    r = my_events()
+    list(r)
+    inc = r.incremental._incremental
+    return f"iv={inc.initial_value.isoformat()},end={inc.end_value.isoformat()}"
+
+
 @job
 def profile_aware(run_context: TJobRunContext):
     """Job that reads the workspace profile env var set by the launcher."""

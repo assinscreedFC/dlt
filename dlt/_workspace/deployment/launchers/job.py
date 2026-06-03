@@ -169,7 +169,7 @@ def run(
     iv: Optional[TTimeInterval] = None
     if iv_start_str and iv_end_str:
         target_tz = ZoneInfo(iv_tz_name)
-        iv = (
+        iv = TTimeInterval(
             ensure_datetime_utc(iv_start_str).astimezone(target_tz),
             ensure_datetime_utc(iv_end_str).astimezone(target_tz),
         )

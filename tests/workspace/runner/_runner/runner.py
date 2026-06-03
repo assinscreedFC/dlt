@@ -515,7 +515,7 @@ def _collect_completions(
             if run_id:
                 run_record = _runs_store.get_run(run_id)
                 if run_record and "interval_start" in run_record:
-                    iv = (run_record["interval_start"], run_record["interval_end"])
+                    iv = TTimeInterval(run_record["interval_start"], run_record["interval_end"])
 
             finished_at = pendulum.now("UTC")
             run_status: TJobRunStatus = "completed" if exit_code == 0 else "failed"

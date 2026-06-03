@@ -145,22 +145,22 @@ def compute_run_interval(
             if prev_interval_end is not None
             else natural_start
         )
-        return (start_utc, end_utc)
+        return TTimeInterval(start_utc, end_utc)
 
     if tt == "every":
         period = float(parsed.expr)  # type: ignore[arg-type]
         # continuity: prev_interval_end extends start backward; else [now-period, now)
         if prev_interval_end is not None:
-            return (ensure_datetime_utc(prev_interval_end), now_p)
-        return (now_p - timedelta(seconds=period), now_p)
+            return TTimeInterval(ensure_datetime_utc(prev_interval_end), now_p)
+        return TTimeInterval(now_p - timedelta(seconds=period), now_p)
 
     if tt == "once":
         # point-in-time: prev_interval_end ignored by design
         once_dt = ensure_datetime_utc(parsed.expr)  # type: ignore[arg-type]
-        return (once_dt, once_dt)
+        return TTimeInterval(once_dt, once_dt)
 
     # all remaining trigger types: point-in-time at now (prev_interval_end ignored)
-    return (now_p, now_p)
+    return TTimeInterval(now_p, now_p)
 
 
 def resolve_interval_spec(spec: TIntervalSpec, cron_expr: str, tz: str = "UTC") -> TTimeInterval:
@@ -179,7 +179,7 @@ def resolve_interval_spec(spec: TIntervalSpec, cron_expr: str, tz: str = "UTC") 
     raw_end = ensure_datetime_in_tz(end_str, target_tz) if end_str else datetime.now(target_tz)
     end = cron_floor(cron_expr, raw_end)
 
-    return start.astimezone(timezone.utc), end.astimezone(timezone.utc)
+    return TTimeInterval(start.astimezone(timezone.utc), end.astimezone(timezone.utc))
 
 
 def cron_floor(cron_expr: str, dt: datetime) -> datetime:

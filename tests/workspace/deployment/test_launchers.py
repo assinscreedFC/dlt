@@ -178,6 +178,25 @@ def test_decorator_to_launcher_e2e_allow_external_schedulers() -> None:
     assert "items=1" in result
 
 
+def test_decorator_to_launcher_e2e_epoch_override() -> None:
+    """`dlt.current.interval.update(start=epoch)` inside the job overrides the launcher-injected
+    start; the bound incremental picks up the override at bind time."""
+    job_def = batch_jobs.epoch_override_job.to_job_definition()
+    ep = build_runtime_entry_point(
+        job_def,
+        cli_config={},
+        profile="dev",
+        refresh=False,
+        interval_start=datetime(2024, 1, 15, tzinfo=timezone.utc),
+        interval_end=datetime(2024, 1, 16, tzinfo=timezone.utc),
+        tz="UTC",
+    )
+    result = job_run(ep, run_id="epoch-override-1", trigger="schedule:0 0 * * *")
+    # initial_value is the override (2023-06-01), end_value is the launcher's end (2024-01-16)
+    assert "iv=2023-06-01" in result
+    assert "end=2024-01-16" in result
+
+
 def test_job_launcher_profile_injection() -> None:
     """Job launcher sets WORKSPACE__PROFILE env var from entry_point.profile."""
     old = os.environ.pop("WORKSPACE__PROFILE", None)
