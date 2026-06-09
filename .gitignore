@@ -166,3 +166,8 @@ compiled_requirements.txt
 
 # docker folder for running tests as other OS
 tests/.docker/
+
+# internal tooling/planning — never publish
+.claude/
+.planning/
+CLAUDE.md
